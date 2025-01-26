@@ -1,0 +1,295 @@
+{% extends "layout.html" %}
+
+{% block title %}Collections{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <!-- Category Filter (Left Sidebar) -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3 fw-bold">Categories</h5>
+                    <div class="list-group">
+                        <a href="{{ url_for('collections') }}" 
+                           class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
+                            <i class="fas fa-tags me-2"></i>All Products
+                        </a>
+                        <a href="{{ url_for('collections', category='dresses') }}" 
+                           class="list-group-item list-group-item-action {% if category == 'dresses' %}active{% endif %}">
+                            <i class="fas fa-female me-2"></i>Dresses
+                        </a>
+                        <a href="{{ url_for('collections', category='tops') }}" 
+                           class="list-group-item list-group-item-action {% if category == 'tops' %}active{% endif %}">
+                            <i class="fas fa-tshirt me-2"></i>Tops
+                        </a>
+                        <a href="{{ url_for('collections', category='bottoms') }}" 
+                           class="list-group-item list-group-item-action {% if category == 'bottoms' %}active{% endif %}">
+                            <i class="fas fa-socks me-2"></i>Bottoms
+                        </a>
+                        <a href="{{ url_for('collections', category='accessories') }}" 
+                           class="list-group-item list-group-item-action {% if category == 'accessories' %}active{% endif %}">
+                            <i class="fas fa-gem me-2"></i>Accessories
+                        </a>
+                    </div>
+
+                    <h5 class="card-title mb-3 mt-4 fw-bold">Price Range</h5>
+                    <div class="range-slider">
+                        <input type="range" class="form-range" id="priceRange" min="0" max="1000000" step="10000">
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="small text-muted">UGX 0</span>
+                            <span class="small text-muted">UGX 1,000,000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">{{ category if category else 'All Products' }}</h2>
+                <div class="d-flex align-items-center">
+                    <select class="form-select me-2" id="sort-select">
+                        <option value="newest">Newest First</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card product-card h-100 border-0 shadow-sm">
+                        <div class="position-relative">
+                            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                                 class="card-img-top" alt="{{ product.name }}"
+                                 style="height: 300px; object-fit: cover;">
+                            {% if product.is_new %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">New</span>
+                            {% endif %}
+                            <button onclick="toggleWishlist({{ product.id }})" 
+                                    class="btn btn-light rounded-circle position-absolute top-0 start-0 m-2 p-2">
+                                <i class="fas fa-heart {% if product.in_wishlist %}text-danger{% endif %}"></i>
+                            </button>
+                        </div>
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="product-price fw-bold mb-2">UGX {{ "{:,.0f}".format(product.price) }}</p>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                   class="btn btn-outline-primary">View Details</a>
+                                <button onclick="addToCart({{ product.id }}, event)" 
+                                        class="btn btn-primary">
+                                    <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Add to Cart Success Modal -->
+            <div class="modal fade" id="cartModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Added to Cart
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shopping-cart fa-2x text-primary me-3"></i>
+                                <p class="mb-0">Product has been added to your cart successfully!</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Continue Shopping
+                            </button>
+                            <a href="{{ url_for('cart') }}" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart me-2"></i>View Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Error Modal -->
+            <div class="modal fade" id="errorModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Error
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="error-message"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {% if not prev_page %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('collections', page=prev_page) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for page_num in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page == page_num %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('collections', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                    {% endfor %}
+                    <li class="page-item {% if not next_page %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('collections', page=next_page) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Add this JavaScript -->
+<script>
+function addToCart(productId, event) {
+    event.preventDefault();
+    const button = event.currentTarget;
+    const originalText = button.innerHTML;
+    
+    // Disable button and show loading state
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+
+    fetch('/add-to-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Please login to add items to cart');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Update cart count in navbar
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.cart_count;
+                cartCount.style.display = data.cart_count > 0 ? 'inline' : 'none';
+            }
+            
+            // Show success modal
+            new bootstrap.Modal(document.getElementById('cartModal')).show();
+            
+            // Add animation to the cart icon in navbar
+            const cartIcon = document.querySelector('.fa-shopping-cart');
+            cartIcon.classList.add('tada');
+            setTimeout(() => cartIcon.classList.remove('tada'), 1000);
+        } else {
+            throw new Error(data.message || 'Error adding item to cart');
+        }
+    })
+    .catch(error => {
+        // Show error modal
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('error-message');
+        errorMessage.textContent = error.message;
+        new bootstrap.Modal(errorModal).show();
+    })
+    .finally(() => {
+        // Reset button state
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+function toggleWishlist(productId) {
+    fetch('/toggle-wishlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+// Add this CSS for the cart icon animation
+document.head.insertAdjacentHTML('beforeend', `
+<style>
+@keyframes tada {
+    0% { transform: scale(1); }
+    10%, 20% { transform: scale(0.9) rotate(-3deg); }
+    30%, 50%, 70%, 90% { transform: scale(1.1) rotate(3deg); }
+    40%, 60%, 80% { transform: scale(1.1) rotate(-3deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.tada {
+    animation: tada 1s ease-in-out;
+}
+
+.spinner-border {
+    vertical-align: middle;
+}
+</style>
+`);
+</script>
+
+<style>
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-img-top {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .card-img-top {
+    opacity: 0.9;
+}
+
+.list-group-item {
+    border-left: 3px solid transparent;
+}
+
+.list-group-item.active {
+    border-left: 3px solid #0d6efd;
+}
+</style>
+{% endblock %} 

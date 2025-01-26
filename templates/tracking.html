@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Order Tracking{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Track Your Order</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form method="GET" action="{{ url_for('orders.track') }}">
+                <div class="mb-3">
+                    <label for="order_id" class="form-label">Order Number</label>
+                    <input type="text" class="form-control" id="order_id" name="order_id" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </form>
+        </div>
+        {% if order %}
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Order #{{ order.id }}</h5>
+                    <p class="card-text">Status: {{ order.status }}</p>
+                    <p class="card-text">Estimated Delivery: {{ order.estimated_delivery }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-slider">
+    <div class="hero-slide active" style="
+        background: linear-gradient(rgba(0, 0, 0, 0.212), rgba(0,0,0,0.5)),
+        url('{{ url_for('static', filename='uploads/fashion.jpg') }}');
+        background-position: center;
+        background-size: cover;
+    ">
+        <div class="container h-100 d-flex align-items-center">
+            <div class="hero-content text-center text-white w-100">
+                <h1 class="display-3 fw-bold mb-4">Welcome to Xein Fashions</h1>
+                <p class="lead mb-4 fs-4">Discover Elegance in Every Stitch</p>
+                <a href="{{ url_for('collections') }}" class="btn btn-primary btn-lg px-5 py-3">Explore Collection</a>
+            </div>
+        </div>
+    </div>
+    <div class="hero-slide" style="
+        background: linear-gradient(rgba(0, 0, 0, 0.212), rgba(0,0,0,0.5)),
+        url('{{ url_for('static', filename='uploads/dress1.jpg') }}');
+        background-position: center;
+        background-size: cover;
+    ">
+        <div class="container h-100 d-flex align-items-center">
+            <div class="hero-content text-center text-white w-100">
+                <h1 class="display-3 fw-bold mb-4">Elegant Dresses</h1>
+                <p class="lead mb-4 fs-4">Find Your Perfect Style</p>
+                <a href="{{ url_for('collections') }}" class="btn btn-primary btn-lg px-5 py-3">Shop Now</a>
+            </div>
+        </div>
+    </div>
+    <div class="hero-slide" style="
+        background: linear-gradient(rgba(0, 0, 0, 0.212), rgba(0,0,0,0.5)),
+        url('{{ url_for('static', filename='uploads/acc1.jpg') }}');
+        background-position: center;
+        background-size: cover;
+    ">
+        <div class="container h-100 d-flex align-items-center">
+            <div class="hero-content text-center text-white w-100">
+                <h1 class="display-3 fw-bold mb-4">Stunning Accessories</h1>
+                <p class="lead mb-4 fs-4">Complete Your Look</p>
+                <a href="{{ url_for('collections') }}" class="btn btn-primary btn-lg px-5 py-3">View Collection</a>
+            </div>
+        </div>
+    </div>
+    <button class="slider-nav prev">&lt;</button>
+    <button class="slider-nav next">&gt;</button>
+</div>
+
+<style>
+.hero-slider {
+    position: relative;
+    height: 600px;
+    overflow: hidden;
+}
+
+.hero-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.hero-slide.active {
+    opacity: 1;
+}
+
+.slider-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    padding: 1rem;
+    cursor: pointer;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.slider-nav:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.prev {
+    left: 20px;
+}
+
+.next {
+    right: 20px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.hero-slide');
+    const prevBtn = document.querySelector('.prev');
+    const nextBtn = document.querySelector('.next');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+        slides.forEach(slide => slide.classList.remove('active'));
+        slides[index].classList.add('active');
+    }
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(currentSlide);
+    }
+
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+
+    // Auto slide every 5 seconds
+    setInterval(nextSlide, 5000);
+});
+</script>
+
+<!-- Featured Products -->
+<section class="featured-products py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold">Featured Collections</h2>
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-md-3 mb-4">
+                <div class="card product-card h-100 border-0 shadow-sm">
+                    <div class="position-relative">
+                        <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                             class="card-img-top" alt="{{ product.name }}"
+                             style="height: 300px; object-fit: cover;">
+                        <div class="wishlist-icon position-absolute top-0 end-0 m-2">
+                            <button class="btn btn-light rounded-circle p-2">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="product-price fw-bold">UGX {{ "{:,.0f}".format(product.price) }}</p>
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                           class="btn btn-outline-primary w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section py-5 bg-light" hidden>
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold">Shop by Category</h2>
+        <div class="row g-4">
+            <div class="col-md-4 mb-4">
+                <div class="category-card position-relative overflow-hidden rounded">
+                    <img src="{{ url_for('static', filename='images/dresses.jpg') }}" 
+                         class="img-fluid w-100" alt="Dresses"
+                         style="height: 400px; object-fit: cover;">
+                    <div class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                        <h3 class="text-white mb-3 fw-bold">Dresses</h3>
+                        <a href="{{ url_for('category', name='dresses') }}" 
+                           class="btn btn-light px-4">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="category-card position-relative overflow-hidden rounded">
+                    <img src="{{ url_for('static', filename='images/tops.jpg') }}" 
+                         class="img-fluid w-100" alt="Tops"
+                         style="height: 400px; object-fit: cover;">
+                    <div class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                        <h3 class="text-white mb-3 fw-bold">Tops</h3>
+                        <a href="{{ url_for('category', name='tops') }}" 
+                           class="btn btn-light px-4">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="category-card position-relative overflow-hidden rounded">
+                    <img src="{{ url_for('static', filename='images/uploads/acc1.jpg') }}" 
+                         class="img-fluid w-100" alt="Accessories"
+                         style="height: 400px; object-fit: cover;">
+                    <div class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+                        <h3 class="text-white mb-3 fw-bold">Accessories</h3>
+                        <a href="{{ url_for('category', name='accessories') }}" 
+                           class="btn btn-light px-4">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add this CSS to your stylesheet -->
+<style>
+.category-card {
+    transition: all 0.3s ease;
+}
+
+.category-overlay {
+    background: rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
+}
+
+.category-card:hover .category-overlay {
+    background: rgba(0,0,0,0.6);
+}
+
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.wishlist-icon button {
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.wishlist-icon button:hover {
+    opacity: 1;
+    background-color: #fff;
+}
+
+.hero-section {
+    background-attachment: fixed;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                 class="img-fluid rounded shadow" 
+                 alt="{{ product.name }}">
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            <p class="text-muted mb-4">{{ product.description }}</p>
+            <h3 class="mb-4">UGX {{ "{:,.0f}".format(product.price) }}</h3>
+            
+            <div class="mb-4">
+                <label class="form-label">Quantity</label>
+                <input type="number" class="form-control w-25" 
+                       id="quantity-{{ product.id }}" value="1" min="1" max="{{ product.stock }}">
+            </div>
+            
+            <button onclick="addToCart({{ product.id }}, document.getElementById('quantity-{{ product.id }}').value)" 
+                    class="btn btn-primary">
+                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+            </button>
+            
+            <div class="mt-4">
+                <h5>Product Details</h5>
+                <ul class="list-unstyled">
+                    <li><strong>Category:</strong> {{ product.category }}</li>
+                    <li><strong>Stock:</strong> {{ product.stock }} units</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add to Cart Success Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Added to Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Product has been added to your cart successfully!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Shopping</button>
+                <a href="{{ url_for('cart') }}" class="btn btn-primary">View Cart</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addToCart(productId, quantity = 1) {
+    fetch('/add-to-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: parseInt(quantity)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update cart count
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) cartCount.textContent = data.cart_count;
+            
+            // Show toast or modal
+            if (window.bootstrap) {
+                const toast = new bootstrap.Toast(document.getElementById('cartToast'));
+                toast.show();
+            }
+        }
+    });
+}
+</script>
+{% endblock %} 

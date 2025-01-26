@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block title %}Shopping Cart{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Shopping Cart</h1>
+    
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-md-8">
+            {% for item in cart_items %}
+            <div class="card mb-3 shadow-sm">
+                <div class="row g-0">
+                    <div class="col-md-3">
+                        <img src="{{ url_for('static', filename='uploads/' + item.image) }}"
+                             class="img-fluid rounded-start" alt="{{ item.name }}"
+                             style="height: 150px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-9">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title">{{ item.name }}</h5>
+                                <button onclick="removeFromCart({{ item.id }})" 
+                                        class="btn btn-link text-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <p class="card-text">UGX {{ "{:,.0f}".format(item.price) }}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group" style="width: 130px;">
+                                    <button class="btn btn-outline-secondary" 
+                                            onclick="updateQuantity({{ item.id }}, -1)">-</button>
+                                    <input type="text" class="form-control text-center" 
+                                           value="{{ item.quantity }}" readonly>
+                                    <button class="btn btn-outline-secondary" 
+                                            onclick="updateQuantity({{ item.id }}, 1)">+</button>
+                                </div>
+                                <p class="ms-3 mb-0">
+                                    Total: UGX {{ "{:,.0f}".format(item.price * item.quantity) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Order Summary</h5>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Subtotal</span>
+                        <span>UGX {{ "{:,.0f}".format(total) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Shipping</span>
+                        <span>Calculated at checkout</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Total</strong>
+                        <strong>UGX {{ "{:,.0f}".format(total) }}</strong>
+                    </div>
+                    <a href="{{ url_for('checkout') }}" 
+                       class="btn btn-primary w-100">Proceed to Checkout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+        <h3>Your cart is empty</h3>
+        <p class="text-muted">Add some products to your cart and they will show up here</p>
+        <a href="{{ url_for('collections') }}" class="btn btn-primary">
+            Continue Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function updateQuantity(itemId, change) {
+    fetch('/update-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            change: change
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function removeFromCart(itemId) {
+    if (confirm('Are you sure you want to remove this item?')) {
+        fetch('/remove-from-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

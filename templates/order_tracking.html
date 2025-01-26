@@ -1,0 +1,156 @@
+{% extends "layout.html" %}
+
+{% block title %}Track Order{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4">Track Order</h3>
+                    
+                    <!-- Order Info -->
+                    <div class="order-info mb-4">
+                        <p class="mb-1"><strong>Order #:</strong> {{ order.reference_number }}</p>
+                        <p class="mb-1"><strong>Order Date:</strong> {{ order.created_at.strftime('%B %d, %Y') }}</p>
+                        <p class="mb-0"><strong>Status:</strong> 
+                            <span class="badge bg-{{ order.status_color }}">{{ order.status }}</span>
+                        </p>
+                    </div>
+
+                    <!-- Tracking Timeline -->
+                    <div class="tracking-timeline">
+                        <div class="timeline-item {% if order.status in ['confirmed', 'processing', 'shipped', 'delivered'] %}completed{% endif %}">
+                            <div class="timeline-badge">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Order Confirmed</h6>
+                                <p class="text-muted">{{ order.confirmed_at.strftime('%B %d, %Y %I:%M %p') if order.confirmed_at }}</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item {% if order.status in ['processing', 'shipped', 'delivered'] %}completed{% endif %}">
+                            <div class="timeline-badge">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Processing</h6>
+                                <p class="text-muted">{{ order.processing_at.strftime('%B %d, %Y %I:%M %p') if order.processing_at }}</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item {% if order.status in ['shipped', 'delivered'] %}completed{% endif %}">
+                            <div class="timeline-badge">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Shipped</h6>
+                                <p class="text-muted">{{ order.shipped_at.strftime('%B %d, %Y %I:%M %p') if order.shipped_at }}</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item {% if order.status == 'delivered' %}completed{% endif %}">
+                            <div class="timeline-badge">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Delivered</h6>
+                                <p class="text-muted">{{ order.delivered_at.strftime('%B %d, %Y %I:%M %p') if order.delivered_at }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Details -->
+                    <div class="shipping-details mt-4">
+                        <h5 class="mb-3">Shipping Details</h5>
+                        <p class="mb-1">{{ order.shipping_address.full_name }}</p>
+                        <p class="mb-1">{{ order.shipping_address.address }}</p>
+                        <p class="mb-1">{{ order.shipping_address.city }}, {{ order.shipping_address.district }}</p>
+                        <p class="mb-0">Phone: {{ order.shipping_address.phone }}</p>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items mt-4">
+                        <h5 class="mb-3">Order Items</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    {% for item in order.items %}
+                                    <tr>
+                                        <td>
+                                            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" 
+                                                 alt="{{ item.name }}" class="img-thumbnail" style="width: 50px;">
+                                        </td>
+                                        <td>{{ item.name }}</td>
+                                        <td>× {{ item.quantity }}</td>
+                                        <td class="text-end">UGX {{ "{:,.0f}".format(item.price * item.quantity) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                        <td class="text-end"><strong>UGX {{ "{:,.0f}".format(order.total) }}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('contact') }}" class="btn btn-outline-primary">Need Help?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tracking-timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 45px;
+    margin-bottom: 30px;
+}
+
+.timeline-badge {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-item.completed .timeline-badge {
+    background: var(--primary-pink);
+    border-color: var(--primary-pink);
+    color: white;
+}
+
+.timeline-item:not(:last-child):before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    bottom: -30px;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item.completed:before {
+    background: var(--primary-pink);
+}
+</style>
+{% endblock %} 

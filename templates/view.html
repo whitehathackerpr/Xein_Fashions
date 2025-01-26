@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ collection.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('collections.index') }}">Collections</a></li>
+            <li class="breadcrumb-item active">{{ collection.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">{{ collection.name }}</h1>
+            <p class="lead">{{ collection.description }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for item in collection.items %}
+        <div class="col-md-4 mb-4">
+            <div class="card product-card">
+                <img src="{{ item.image }}" class="card-img-top" alt="{{ item.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.name }}</h5>
+                    <p class="card-text price">UGX {{ "%.2f"|format(item.price) }}</p>
+                    <button class="btn btn-primary w-100 add-to-cart" data-product-id="{{ item.id }}">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .product-card img {
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .price {
+        color: var(--primary-pink);
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .breadcrumb-item a {
+        color: var(--primary-pink);
+        text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+        color: var(--dark);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            // Add your cart logic here
+            console.log('Adding product to cart:', productId);
+        });
+    });
+});
+</script>
+{% endblock %} 

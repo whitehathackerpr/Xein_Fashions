@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}My Wishlist{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">My Wishlist</h1>
+
+    {% if wishlist_items %}
+    <div class="row">
+        {% for item in wishlist_items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="position-relative">
+                    <img src="{{ item.image }}" class="card-img-top" alt="{{ item.name }}">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" 
+                            onclick="removeFromWishlist({{ item.id }})">
+                        <i class="fas fa-heart-broken"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.name }}</h5>
+                    <div class="mb-2">
+                        <span class="text-primary fw-bold">${{ "%.2f"|format(item.price) }}</span>
+                    </div>
+                    <div class="mb-3">
+                        {% for i in range(5) %}
+                        <i class="fas fa-star {% if i < item.rating|int %}text-warning{% else %}text-muted{% endif %}"></i>
+                        {% endfor %}
+                        <small class="text-muted ms-2">({{ item.reviews_count }})</small>
+                    </div>
+                    <button class="btn btn-primary w-100 {% if not item.in_stock %}disabled{% endif %}"
+                            onclick="addToCart({{ item.id }})">
+                        {% if item.in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+        <h3>Your wishlist is empty</h3>
+        <p class="text-muted">Save items you love to your wishlist</p>
+        <a href="{{ url_for('collections') }}" class="btn btn-primary">Continue Shopping</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function removeFromWishlist(itemId) {
+    // Add your wishlist removal logic here
+    console.log('Remove from wishlist:', itemId);
+}
+
+function addToCart(itemId) {
+    // Add your add to cart logic here
+    console.log('Add to cart:', itemId);
+}
+</script>
+{% endblock %} 

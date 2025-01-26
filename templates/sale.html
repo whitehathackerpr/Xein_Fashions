@@ -1,0 +1,155 @@
+{% extends "layout.html" %}
+
+{% block title %}Sale Items{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-danger">Sale</h1>
+        <p class="lead text-muted">Great deals on selected items</p>
+    </div>
+    
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-3 mb-4">
+            <div class="card product-card h-100 border-0 shadow-sm">
+                <div class="position-relative">
+                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                         class="card-img-top" alt="{{ product.name }}"
+                         style="height: 300px; object-fit: cover;">
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-2">SALE</span>
+                    {% if current_user.is_authenticated %}
+                    <button onclick="toggleWishlist({{ product.id }})" 
+                            class="btn btn-light rounded-circle position-absolute top-0 start-0 m-2 p-2">
+                        <i class="fas fa-heart {% if product.in_wishlist %}text-danger{% endif %}"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <div class="price-container mb-2">
+                        <span class="text-decoration-line-through text-muted me-2">
+                            UGX {{ "{:,.0f}".format(product.original_price) }}
+                        </span>
+                        <span class="fw-bold text-danger">
+                            UGX {{ "{:,.0f}".format(product.price) }}
+                        </span>
+                    </div>
+                    
+                    <!-- Discount percentage -->
+                    {% if product.original_price %}
+                    {% set discount = ((product.original_price - product.price) / product.original_price * 100)|round|int %}
+                    <div class="mb-3">
+                        <span class="badge bg-danger">{{ discount }}% OFF</span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Rating stars (if available) -->
+                    {% if product.rating %}
+                    <div class="mb-3">
+                        {% for i in range(5) %}
+                        <i class="fas fa-star {% if i < product.rating|round|int %}text-warning{% else %}text-muted{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                           class="btn btn-outline-primary">View Details</a>
+                        <button onclick="addToCart({{ product.id }})" 
+                                class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not products %}
+    <div class="text-center py-5">
+        <i class="fas fa-tag fa-3x text-muted mb-3"></i>
+        <h3>No Items on Sale</h3>
+        <p class="text-muted">Check back later for great deals!</p>
+        <a href="{{ url_for('collections') }}" class="btn btn-primary">
+            Browse Collections
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% include 'includes/cart_modals.html' %}
+
+<script>
+function addToCart(productId) {
+    const button = event.currentTarget;
+    const originalText = button.innerHTML;
+    
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Adding...';
+
+    fetch('/add-to-cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            new bootstrap.Modal(document.getElementById('cartModal')).show();
+            document.getElementById('cart-count').textContent = data.cart_count;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        new bootstrap.Modal(document.getElementById('errorModal')).show();
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
+function toggleWishlist(productId) {
+    fetch('/toggle-wishlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+</script>
+
+<style>
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-img-top {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .card-img-top {
+    opacity: 0.9;
+}
+</style>
+{% endblock %} 

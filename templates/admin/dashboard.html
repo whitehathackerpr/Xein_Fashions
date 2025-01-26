@@ -1,0 +1,139 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Total Orders (30d)</h6>
+                            <h4 class="mb-0">{{ stats.total_orders }}</h4>
+                        </div>
+                        <div class="avatar bg-light-primary">
+                            <i class="fas fa-shopping-bag text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Total Sales (30d)</h6>
+                            <h4 class="mb-0">UGX {{ "{:,.0f}".format(stats.total_sales) }}</h4>
+                        </div>
+                        <div class="avatar bg-light-success">
+                            <i class="fas fa-money-bill text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Avg Order Value</h6>
+                            <h4 class="mb-0">UGX {{ "{:,.0f}".format(stats.avg_order_value) }}</h4>
+                        </div>
+                        <div class="avatar bg-light-info">
+                            <i class="fas fa-chart-line text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-muted mb-2">Low Stock Items</h6>
+                            <h4 class="mb-0">{{ low_stock|length }}</h4>
+                        </div>
+                        <div class="avatar bg-light-warning">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-xl-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.reference_number }}</td>
+                                    <td>{{ order.username }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ order.status_color }}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td>UGX {{ "{:,.0f}".format(order.total) }}</td>
+                                    <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="col-xl-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Low Stock Alert</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for product in low_stock %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                                     alt="{{ product.name }}" class="me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ product.name }}</h6>
+                                    <small class="text-danger">Only {{ product.stock }} left in stock</small>
+                                </div>
+                                <a href="{{ url_for('admin.edit_product', product_id=product.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">Update</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
