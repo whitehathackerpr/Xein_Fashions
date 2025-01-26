@@ -1,0 +1,11 @@
+Flask
+Flask-Paginate
+Flask-Login
+Flask-WTF
+Flask-Mail
+Flask-Bcrypt
+Flask-SQLAlchemy
+Flask-MySQLdb
+Flask-CKEditor
+
+
